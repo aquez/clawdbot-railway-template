@@ -1337,6 +1337,9 @@ function requireDashboardAuth(req, res, next) {
   if (!SETUP_PASSWORD) return next(); // no password configured → open
   const header = req.headers.authorization || "";
   const [scheme, encoded] = header.split(" ");
+  // Control UI fetches carry their own gateway/device token as Bearer; the gateway
+  // validates it. Challenging these with Basic makes the browser re-prompt forever.
+  if (scheme === "Bearer" && encoded) return next();
   if (scheme !== "Basic" || !encoded) {
     res.set("WWW-Authenticate", 'Basic realm="OpenClaw Dashboard"');
     return res.status(401).send("Auth required");
